@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { HapticTab } from "../HapticTab";
 
-type RoutePath = "/explore";
+type RoutePath = "/explore" | "/settings";
 
 const MenuDrawer = () => {
   const router = useRouter();
@@ -50,13 +50,18 @@ const MenuDrawer = () => {
       route: "/explore",
     },
     {
-      title: "claims",
+      title: "Claims",
       icon: "file-text",
       route: "/explore",
     },
     {
       title: "Settings",
       icon: "settings",
+      route: "/settings",
+    },
+     {
+      title: "About us",
+      icon: "info",
       route: "/explore",
     },
   ];

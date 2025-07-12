@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -10,6 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 
 const OTPScreen = () => {
   const navigation = useNavigation();
@@ -21,10 +23,22 @@ const OTPScreen = () => {
   const [timer, setTimer] = useState(60);
   const [isResendEnabled, setIsResendEnabled] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+
+  const handleButtonPress = () => {
+    if (!isOtpVerified) {
+      setIsVerifying(true);
+      setTimeout(() => {
+        setIsVerifying(false);
+        setIsOtpVerified(true);
+      }, 1000);
+    } else {
+      router.replace("/(drawer)");
+    }
+  };
 
   const inputRef = useRef<TextInput>(null);
 
-  // Timer effect
   useEffect(() => {
     if (timer === 0) {
       setIsResendEnabled(true);
@@ -38,7 +52,6 @@ const OTPScreen = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  // Focus input on mount
   useEffect(() => {
     const focusTimeout = setTimeout(() => {
       inputRef.current?.focus();
@@ -47,9 +60,8 @@ const OTPScreen = () => {
     return () => clearTimeout(focusTimeout);
   }, []);
 
-  // Auto-verify when OTP is complete
   useEffect(() => {
-    if (otp.length === 6) {
+    if (otp.length === 4) {
       verifyOtp(otp);
     }
   }, [otp]);
@@ -62,7 +74,7 @@ const OTPScreen = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Replace this with actual backend OTP validation
-      const dummyOtp = "123456";
+      const dummyOtp = "1234";
 
       if (enteredOtp === dummyOtp) {
         setError("");
@@ -110,72 +122,67 @@ const OTPScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.heading}>Verify OTP</Text>
-        <Text style={styles.subText}>
-          Enter the 6-digit code sent to {phone}
-        </Text>
+    <View style={styles.otpcontainer}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.heading}>Verify OTP</Text>
+          <View style={{ flexDirection: "row", gap: 4 }}>
+            <Text style={styles.subText}>
+              Enter the 4-digit code sent to {phone}
+            </Text>
+            <Pressable onPress={() => router.back()}>
+              <MaterialCommunityIcons
+                name="square-edit-outline"
+                size={20}
+                color="gray"
+              />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            ref={inputRef}
+            value={otp}
+            onChangeText={handleOtpChange}
+            keyboardType="number-pad"
+            maxLength={4}
+            style={[
+              styles.input,
+              error ? styles.inputError : null,
+              isVerifying ? styles.inputDisabled : null,
+            ]}
+            placeholder="0000"
+            placeholderTextColor="#9CA3AF"
+            editable={!isVerifying}
+            autoFocus={true}
+          />
+
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          {isVerifying && (
+            <Text style={styles.verifyingText}>Verifying...</Text>
+          )}
+        </View>
+
+        <View style={styles.timerContainer}>
+          <Text style={styles.timerText}>
+            {isResendEnabled
+              ? "Didn't receive the code?"
+              : `Resend code in ${formatTimer(timer)}`}
+          </Text>
+
+          {isResendEnabled && (
+            <TouchableOpacity onPress={handleResendOtp} activeOpacity={0.9}>
+              <Text style={styles.resendButtonText}>Resend OTP</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          ref={inputRef}
-          value={otp}
-          onChangeText={handleOtpChange}
-          keyboardType="number-pad"
-          maxLength={6}
-          style={[
-            styles.input,
-            error ? styles.inputError : null,
-            isVerifying ? styles.inputDisabled : null,
-          ]}
-          placeholder="000000"
-          placeholderTextColor="#9CA3AF"
-          editable={!isVerifying}
-          autoFocus={true}
-        />
-
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        {isVerifying && <Text style={styles.verifyingText}>Verifying...</Text>}
-      </View>
-
-      <View style={styles.timerContainer}>
-        <Text style={styles.timerText}>
-          {isResendEnabled
-            ? "Didn't receive the code?"
-            : `Resend code in ${formatTimer(timer)}`}
-        </Text>
-
-        {isResendEnabled && (
-          <TouchableOpacity
-            onPress={handleResendOtp}
-            style={styles.resendButton}
-          >
-            <Text style={styles.resendButtonText}>Resend OTP</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Manual verify button for incomplete OTP */}
-      {otp.length > 0 && otp.length < 6 && !isVerifying && (
-        <Button
-          onPress={() => verifyOtp(otp)}
-          variant="outline"
-          style={styles.verifyButton}
-        >
-          Verify OTP
-        </Button>
-      )}
-
-      {/* Back button */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-      >
-        <Text style={styles.backButtonText}>Change Phone Number</Text>
-      </TouchableOpacity>
+      <Button onPress={handleButtonPress} disabled={isVerifying}>
+        {isOtpVerified ? "Submit" : isVerifying ? "Verifying..." : "Verify OTP"}
+      </Button>
     </View>
   );
 };
@@ -183,27 +190,30 @@ const OTPScreen = () => {
 export default OTPScreen;
 
 const styles = StyleSheet.create({
+  otpcontainer: {
+    justifyContent: "space-between",
+    flex: 1,
+    marginBottom: 16,
+    marginHorizontal: 16,
+  },
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: "center",
+    paddingVertical: 20,
+    paddingHorizontal: 10,
     backgroundColor: "#FFFFFF",
   },
   header: {
-    alignItems: "center",
     marginBottom: 32,
   },
   heading: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
     marginBottom: 8,
-    textAlign: "center",
     color: "#111827",
   },
   subText: {
     fontSize: 16,
     color: "#6B7280",
-    textAlign: "center",
     lineHeight: 24,
   },
   inputContainer: {
@@ -241,26 +251,15 @@ const styles = StyleSheet.create({
     color: "#3B82F6",
     fontSize: 14,
     marginTop: 8,
-    textAlign: "center",
     fontWeight: "500",
   },
   timerContainer: {
-    alignItems: "center",
     marginBottom: 24,
   },
   timerText: {
     fontSize: 14,
     color: "#6B7280",
-    textAlign: "center",
     marginBottom: 16,
-  },
-  resendButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    backgroundColor: "#F3F4F6",
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
   },
   resendButtonText: {
     color: "#3B82F6",

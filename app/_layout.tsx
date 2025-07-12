@@ -10,6 +10,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import RawErrorBoundary from "react-native-error-boundary";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
 export default function RootLayout() {
@@ -26,16 +27,20 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Stack screenOptions={{ headerShown: false }}>
-          {isLoggedIn ? (
-            <Stack.Screen name="(drawer)" />
-          ) : (
-            <Stack.Screen name="(auth)" />
-          )}
-          <Stack.Screen name="explore" />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Protected guard={!isLoggedIn}>
+              <Stack.Screen name="(auth)" />
+            </Stack.Protected>
+            <Stack.Protected guard={isLoggedIn}>
+              <Stack.Screen name="(drawer)" />
+              <Stack.Screen name="settings" />
+              <Stack.Screen name="explore" />
+            </Stack.Protected>
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </GestureHandlerRootView>
       </ErrorBoundary>
     </ThemeProvider>
   );
