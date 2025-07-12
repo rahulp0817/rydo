@@ -12,7 +12,6 @@ export const useAuthStore = create(
   persist<UserState>(
     (set) => ({
       isLoggedIn: false,
-      hasCompletedOnboarding: false,
       logIn: () => {
         set((state) => {
           return {

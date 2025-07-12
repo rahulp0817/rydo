@@ -5,13 +5,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Dimensions,
-    ImageBackground,
-    Linking,
-    Platform,
-    StyleSheet,
-    Text,
-    View,
+  Dimensions,
+  ImageBackground,
+  Linking,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "flex-end",
     paddingHorizontal: 24,
-    paddingBottom: 60,
+    paddingBottom: 40,
   },
   content: {
     alignItems: "flex-start",

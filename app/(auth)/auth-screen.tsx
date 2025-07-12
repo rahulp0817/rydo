@@ -1,4 +1,3 @@
-import Spinner from "@/components/ui/spinner";
 import { lazy, Suspense } from "react";
 
 const OnboardingScreen = lazy(
@@ -6,7 +5,7 @@ const OnboardingScreen = lazy(
 );
 const AuthScreen = () => {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<></>}>
       <OnboardingScreen />
     </Suspense>
   );

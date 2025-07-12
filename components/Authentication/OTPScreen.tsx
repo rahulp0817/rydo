@@ -1,43 +1,108 @@
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/AuthStore";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Pressable } from "react-native-gesture-handler";
 
 const OTPScreen = () => {
-  const navigation = useNavigation();
   const route = useRoute();
   const { phone } = route.params as { phone: string };
   const router = useRouter();
+
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [timer, setTimer] = useState(60);
   const [isResendEnabled, setIsResendEnabled] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const { logIn } = useAuthStore();
 
-  const handleButtonPress = () => {
-    if (!isOtpVerified) {
-      setIsVerifying(true);
-      setTimeout(() => {
-        setIsVerifying(false);
+  const inputRef = useRef<TextInput>(null);
+
+  const handleOtpChange = (text: string) => {
+    const numericText = text.replace(/[^0-9]/g, "");
+    setOtp(numericText);
+    setError("");
+  };
+
+  const verifyOtp = async (enteredOtp: string) => {
+    setIsVerifying(true);
+    setError("");
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const dummyOtp = "1234";
+      if (enteredOtp === dummyOtp) {
+        setError("");
         setIsOtpVerified(true);
-      }, 1000);
-    } else {
-      router.replace("/(drawer)");
+        try {
+          await logIn();
+          router.replace("/");
+        } catch (loginError) {
+          console.error("Login failed:", loginError);
+          setError("Login failed. Please try again.");
+          setIsOtpVerified(false);
+        }
+      } else {
+        setError("Invalid OTP. Please try again.");
+        setOtp("");
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      setError("Verification failed. Please try again.");
+      setOtp("");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const inputRef = useRef<TextInput>(null);
+  const handleButtonPress = async () => {
+    if (!isOtpVerified && otp.length === 4) {
+      await verifyOtp(otp);
+    } else if (isOtpVerified) {
+      try {
+        await logIn();
+        router.replace("/");
+      } catch (loginError) {
+        console.error("Login failed:", loginError);
+        setError("Login failed. Please try again.");
+      }
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setOtp("");
+    setError("");
+    setTimer(60);
+    setIsResendEnabled(false);
+    setIsOtpVerified(false);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      Alert.alert("OTP Resent", `A new OTP has been sent to ${phone}`);
+    } catch {
+      Alert.alert("Error", "Failed to resend OTP. Please try again.");
+      setIsResendEnabled(true);
+      setTimer(0);
+    }
+  };
+
+  const formatTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     if (timer === 0) {
@@ -53,73 +118,18 @@ const OTPScreen = () => {
   }, [timer]);
 
   useEffect(() => {
-    const focusTimeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
 
-    return () => clearTimeout(focusTimeout);
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    if (otp.length === 4) {
+    if (otp.length === 4 && !isOtpVerified && !isVerifying) {
       verifyOtp(otp);
     }
-  }, [otp]);
-
-  const verifyOtp = async (enteredOtp: string) => {
-    setIsVerifying(true);
-    setError("");
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Replace this with actual backend OTP validation
-      const dummyOtp = "1234";
-
-      if (enteredOtp === dummyOtp) {
-        setError("");
-        router.replace("/(drawer)");
-      } else {
-        setError("Invalid OTP. Please try again.");
-        setOtp("");
-      }
-    } catch (error) {
-      setError("Verification failed. Please try again.");
-      setOtp("");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setOtp("");
-    setError("");
-    setTimer(60);
-    setIsResendEnabled(false);
-
-    try {
-      // Simulate API call for resending OTP
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      Alert.alert("OTP Resent", `A new OTP has been sent to ${phone}`);
-    } catch (error) {
-      Alert.alert("Error", "Failed to resend OTP. Please try again.");
-      setIsResendEnabled(true);
-      setTimer(0);
-    }
-  };
-
-  const handleOtpChange = (text: string) => {
-    // Only allow numeric input
-    const numericText = text.replace(/[^0-9]/g, "");
-    setOtp(numericText);
-    setError("");
-  };
-
-  const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  }, [otp, isOtpVerified, isVerifying]);
 
   return (
     <View style={styles.otpcontainer}>
@@ -155,11 +165,8 @@ const OTPScreen = () => {
             placeholder="0000"
             placeholderTextColor="#9CA3AF"
             editable={!isVerifying}
-            autoFocus={true}
           />
-
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
+          {!!error && <Text style={styles.errorText}>{error}</Text>}
           {isVerifying && (
             <Text style={styles.verifyingText}>Verifying...</Text>
           )}
@@ -191,8 +198,8 @@ export default OTPScreen;
 
 const styles = StyleSheet.create({
   otpcontainer: {
-    justifyContent: "space-between",
     flex: 1,
+    justifyContent: "space-between",
     marginBottom: 16,
     marginHorizontal: 16,
   },
@@ -242,9 +249,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#EF4444",
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 8,
-    textAlign: "center",
     fontWeight: "500",
   },
   verifyingText: {
@@ -265,17 +271,5 @@ const styles = StyleSheet.create({
     color: "#3B82F6",
     fontSize: 16,
     fontWeight: "600",
-  },
-  verifyButton: {
-    marginBottom: 16,
-  },
-  backButton: {
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  backButtonText: {
-    color: "#6B7280",
-    fontSize: 16,
-    fontWeight: "500",
   },
 });
