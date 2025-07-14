@@ -10,7 +10,14 @@ const AuthLayout = () => {
           name="auth-screen"
           options={{
             headerShown: false,
-            animation: 'none'
+            animation: 'fade'
+          }}
+        />
+         <Stack.Screen
+          name="category-screen"
+          options={{
+            headerShown: false,
+            animation: 'fade'
           }}
         />
         <Stack.Screen

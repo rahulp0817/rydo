@@ -1,12 +1,13 @@
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import CustomHeader from "../Header/CustomHeader";
 import DrawerContent from "./DrawerContent";
 
 export default function CustomDrawerNavigation() {
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ paddingTop: 40 }}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View>
         <CustomHeader title="Menu" showBackIcon={true} />
       </View>
       <DrawerContentScrollView
@@ -19,6 +20,6 @@ export default function CustomDrawerNavigation() {
       >
         <DrawerContent />
       </DrawerContentScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

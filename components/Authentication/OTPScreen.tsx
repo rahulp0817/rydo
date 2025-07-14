@@ -1,18 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/AuthStore";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Pressable } from "react-native-gesture-handler";
+import React, { useEffect, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { OtpInput } from "react-native-otp-entry";
 
 const OTPScreen = () => {
   const route = useRoute();
@@ -27,8 +19,6 @@ const OTPScreen = () => {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const { logIn } = useAuthStore();
 
-  const inputRef = useRef<TextInput>(null);
-
   const handleOtpChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, "");
     setOtp(numericText);
@@ -42,7 +32,7 @@ const OTPScreen = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const dummyOtp = "1234";
+      const dummyOtp = "123456";
       if (enteredOtp === dummyOtp) {
         setError("");
         setIsOtpVerified(true);
@@ -68,7 +58,7 @@ const OTPScreen = () => {
   };
 
   const handleButtonPress = async () => {
-    if (!isOtpVerified && otp.length === 4) {
+    if (!isOtpVerified && otp.length === 6) {
       await verifyOtp(otp);
     } else if (isOtpVerified) {
       try {
@@ -118,15 +108,7 @@ const OTPScreen = () => {
   }, [timer]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    if (otp.length === 4 && !isOtpVerified && !isVerifying) {
+    if (otp.length === 6 && !isOtpVerified && !isVerifying) {
       verifyOtp(otp);
     }
   }, [otp, isOtpVerified, isVerifying]);
@@ -135,37 +117,34 @@ const OTPScreen = () => {
     <View style={styles.otpcontainer}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.heading}>Verify OTP</Text>
+          <Text style={styles.heading}>Verify Details</Text>
           <View style={{ flexDirection: "row", gap: 4 }}>
-            <Text style={styles.subText}>
-              Enter the 4-digit code sent to {phone}
-            </Text>
-            <Pressable onPress={() => router.back()}>
-              <MaterialCommunityIcons
-                name="square-edit-outline"
-                size={20}
-                color="gray"
-              />
-            </Pressable>
+            <Text style={styles.subText}>OTP sent to {phone}</Text>
           </View>
         </View>
 
+        {/* Replaced native TextInput with OtpInput */}
         <View style={styles.inputContainer}>
-          <TextInput
-            ref={inputRef}
-            value={otp}
-            onChangeText={handleOtpChange}
-            keyboardType="number-pad"
-            maxLength={4}
-            style={[
-              styles.input,
-              error ? styles.inputError : null,
-              isVerifying ? styles.inputDisabled : null,
-            ]}
-            placeholder="0000"
-            placeholderTextColor="#9CA3AF"
-            editable={!isVerifying}
+          <OtpInput
+            numberOfDigits={6}
+            onTextChange={handleOtpChange}
+            focusColor="rgba(116, 70, 243, 1)"
+            autoFocus
+            theme={{
+              pinCodeContainerStyle: {
+                backgroundColor: "white",
+                borderWidth: 1.5,
+                borderColor:
+                  otp.length === 4
+                    ? "rgba(116, 70, 243, 1)"
+                    : "rgba(204, 203, 205, 1)",
+                borderRadius: 6,
+                width: 54,
+                height: 54,
+              },
+            }}
           />
+
           {!!error && <Text style={styles.errorText}>{error}</Text>}
           {isVerifying && (
             <Text style={styles.verifyingText}>Verifying...</Text>
@@ -188,7 +167,7 @@ const OTPScreen = () => {
       </View>
 
       <Button onPress={handleButtonPress} disabled={isVerifying}>
-        {isOtpVerified ? "Submit" : isVerifying ? "Verifying..." : "Verify OTP"}
+        {isOtpVerified ? "Submit" : isVerifying ? "Verifying..." : "Verify"}
       </Button>
     </View>
   );
@@ -200,22 +179,22 @@ const styles = StyleSheet.create({
   otpcontainer: {
     flex: 1,
     justifyContent: "space-between",
-    marginBottom: 16,
-    marginHorizontal: 16,
+    marginBottom: 10,
+    marginHorizontal: 10,
   },
   container: {
     flex: 1,
-    paddingVertical: 20,
+    paddingVertical: 24,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF",
   },
   header: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   heading: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 8,
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 6,
     color: "#111827",
   },
   subText: {
@@ -224,28 +203,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   inputContainer: {
-    marginBottom: 32,
-  },
-  input: {
-    height: 60,
-    borderColor: "#D1D5DB",
-    borderWidth: 2,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 24,
-    letterSpacing: 8,
-    textAlign: "center",
-    color: "#111827",
-    backgroundColor: "#FFFFFF",
-    fontWeight: "600",
-  },
-  inputError: {
-    borderColor: "#EF4444",
-    backgroundColor: "#FEF2F2",
-  },
-  inputDisabled: {
-    backgroundColor: "#F9FAFB",
-    opacity: 0.6,
+    marginBottom: 16,
   },
   errorText: {
     color: "#EF4444",
@@ -260,12 +218,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   timerContainer: {
-    marginBottom: 24,
+    marginBottom: 16,
+    gap: 8,
   },
   timerText: {
     fontSize: 14,
     color: "#6B7280",
-    marginBottom: 16,
   },
   resendButtonText: {
     color: "#3B82F6",

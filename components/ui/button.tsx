@@ -1,50 +1,98 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef } from "react";
 import {
   ActivityIndicator,
+  Platform,
   StyleSheet,
   Text,
   TextStyle,
+  TouchableOpacity,
   View,
   ViewStyle,
-} from 'react-native';
-import { HapticTab } from '../HapticTab';
+} from "react-native";
+import { HapticTab } from "../HapticTab";
 
-type Variant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-type Size = 'default' | 'sm' | 'lg' | 'icon' | 'compact';
+type Variant =
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link";
+type Size = "default" | "sm" | "lg" | "icon" | "compact";
 
 type ButtonProps = React.ComponentPropsWithoutRef<typeof HapticTab> & {
   variant?: Variant;
   size?: Size;
   children?: React.ReactNode;
-  loading?: boolean; 
+  loading?: boolean;
 };
 
 const Button = forwardRef<React.ElementRef<typeof HapticTab>, ButtonProps>(
-  ({ variant = 'default', size = 'default', disabled, loading, style, children, ...props }, ref) => {
+  (
+    {
+      variant = "default",
+      size = "default",
+      disabled,
+      loading,
+      style,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     return (
-      <HapticTab
-        ref={ref}
-        disabled={disabled || loading}
-        style={[
-          getButtonStyle(variant, size),
-          (disabled || loading) && styles.disabled,
-          style,
-        ]}
-        {...props}
-      >
-        <View style={styles.innerContainer}>
-          {loading ? (
-            <ActivityIndicator size="small" color={getSpinnerColor(variant)} />
-          ) : (
-            <Text style={getTextStyle(variant, size)}>{children}</Text>
-          )}
-        </View>
-      </HapticTab>
+      <View style={{ borderRadius: 40, overflow: "hidden", width: "100%" }}>
+        {Platform.OS === "ios" ? (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            disabled={disabled || loading}
+            style={[
+              getButtonStyle(variant, size),
+              (disabled || loading) && styles.disabled,
+              style,
+            ]}
+            onPress={props.onPress}
+          >
+            <View style={styles.innerContainer}>
+              {loading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={getSpinnerColor(variant)}
+                />
+              ) : (
+                <Text style={getTextStyle(variant, size)}>{children}</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <HapticTab
+            ref={ref}
+            disabled={disabled || loading}
+            style={[
+              getButtonStyle(variant, size),
+              (disabled || loading) && styles.disabled,
+              style,
+            ]}
+            {...props}
+          >
+            <View style={styles.innerContainer}>
+              {loading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={getSpinnerColor(variant)}
+                />
+              ) : (
+                <Text style={getTextStyle(variant, size)}>{children}</Text>
+              )}
+            </View>
+          </HapticTab>
+        )}
+      </View>
     );
   }
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 export { Button };
 
 const getButtonStyle = (variant: Variant, size: Size): ViewStyle => {
@@ -65,66 +113,63 @@ const getTextStyle = (variant: Variant, size: Size): TextStyle => {
 
 const getSpinnerColor = (variant: Variant): string => {
   switch (variant) {
-    case 'default':
-    case 'outline':
-    case 'secondary':
-    case 'ghost':
-      return '#000000';
-    case 'destructive':
-      return '#FFFFFF';
-    case 'link':
-      return '#1D4ED8';
+    case "default":
+    case "outline":
+    case "secondary":
+    case "ghost":
+      return "#000000";
+    case "destructive":
+      return "#FFFFFF";
+    case "link":
+      return "#1D4ED8";
     default:
-      return '#000000';
+      return "#000000";
   }
 };
-
-//
-// Styles
-//
 
 const styles = StyleSheet.create({
   base: {
     borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    width: '100%',
-    paddingVertical: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    width: "100%",
+    paddingVertical: 16,
     paddingHorizontal: 20,
+    overflow: "hidden",
   },
   disabled: {
     opacity: 0.5,
   },
   innerContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
   },
 });
 
 const variantStyles: Record<Variant, ViewStyle> = {
   default: {
-    backgroundColor: '#FFD700',
+    backgroundColor: "#FFD700",
   },
   destructive: {
-    backgroundColor: '#EF4444',
+    backgroundColor: "#EF4444",
   },
   outline: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: '#FFD700',
+    borderColor: "#FFD700",
   },
   secondary: {
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     borderWidth: 2,
-    borderColor: '#3B82F6',
+    borderColor: "#3B82F6",
   },
   ghost: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   link: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
 };
 
@@ -147,17 +192,17 @@ const sizeStyles: Record<Size, ViewStyle> = {
 const textStyles = StyleSheet.create({
   base: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 
 const textVariantStyles: Record<Variant, TextStyle> = {
-  default: { color: '#000000' },
-  destructive: { color: '#FFFFFF' },
-  outline: { color: '#FFD700' },
-  secondary: { color: '#000000' },
-  ghost: { color: '#000000' },
-  link: { color: '#1D4ED8', textDecorationLine: 'underline' },
+  default: { color: "#000000" },
+  destructive: { color: "#FFFFFF" },
+  outline: { color: "#FFD700" },
+  secondary: { color: "#000000" },
+  ghost: { color: "#000000" },
+  link: { color: "#1D4ED8", textDecorationLine: "underline" },
 };
 
 const textSizeStyles: Record<Size, TextStyle> = {
@@ -165,5 +210,5 @@ const textSizeStyles: Record<Size, TextStyle> = {
   sm: { fontSize: 14 },
   lg: { fontSize: 18 },
   icon: {},
-  compact: { textAlign: 'center' },
+  compact: { textAlign: "center" },
 };

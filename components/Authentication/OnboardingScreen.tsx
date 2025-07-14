@@ -46,7 +46,7 @@ const OnboardingScreen = () => {
   }, []);
 
   const handleContinue = () => {
-    router.push("/(auth)/phone-screen");
+    router.push("/(auth)/category-screen");
   };
 
   if (isLoading) {
@@ -85,13 +85,21 @@ const OnboardingScreen = () => {
       />
 
       <LinearGradient
-        colors={["rgba(3,0,0,0.1)", "rgba(3,26,50,0.9)", "rgba(3,26,50,1)"]}
+        colors={["rgba(3,0,0,0.3)", "rgba(3,26,50,0.9)", "rgba(3,26,50,1)"]}
         locations={[0.4, 0.7, 1]}
         style={styles.overlay}
       >
         <SafeAreaView style={styles.rydoContainer}>
-          <Text style={{ fontSize: 24 }}>🛵</Text>
           <Text style={styles.rydoText}>rydo</Text>
+          {/* <View
+            style={{
+              transform: [
+                { rotateY: Platform.OS === "ios" ? "180deg" : "0deg" },
+              ],
+            }}
+          >
+            <Text style={{ fontSize: 24 }}>🛵</Text>
+          </View> */}
         </SafeAreaView>
         <View style={styles.content}>
           <View style={styles.text}>
@@ -191,11 +199,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8
+    gap: 8,
   },
 
   rydoText: {
-    color: "Green",
+    color: "#FFD700",
     fontSize: 24,
     fontWeight: "bold",
   },

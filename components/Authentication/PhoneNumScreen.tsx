@@ -1,13 +1,13 @@
 import { useNavigation } from "@react-navigation/native";
 import { useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Button } from "../ui/button";
 import CustomPhoneInput from "../ui/input/CustomPhoneInput";
 
 const PhoneNumScreen = () => {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
-  const hasNavigatedRef = useRef(false); // Prevent multiple auto navigations
+  const hasNavigatedRef = useRef(false);
 
   const navigation = useNavigation();
 
@@ -24,27 +24,32 @@ const PhoneNumScreen = () => {
   };
 
   const handleChangeText = (text: string) => {
-    setPhone(text);
+    const numericText = text.replace(/[^0-9]/g, "");
+    setPhone(numericText);
     setError("");
 
     if (text.length === 10 && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       // @ts-ignore
       navigation.navigate("otp-screen", { phone: `+91${text}` });
-    } else if (text.length < 10) {
-      hasNavigatedRef.current = false; // reset if user deletes digits
+    } else if (numericText.length < 10) {
+      hasNavigatedRef.current = false;
     }
   };
 
   return (
     <View style={styles.phoneContainer}>
-      <CustomPhoneInput
-        label="Enter Phone Number"
-        value={phone}
-        onChangeText={handleChangeText}
-        error={error}
-        required
-      />
+      <View>
+        <Text style={styles.title}>Enter Your Phone Number</Text>
+        <CustomPhoneInput
+          // label="Enter Phone Number"
+          value={phone}
+          onChangeText={handleChangeText}
+          error={error}
+          keyboardType="number-pad"
+          required
+        />
+      </View>
 
       <View style={styles.buttonWrapper}>
         <Button onPress={handleNext}>Next</Button>
@@ -58,11 +63,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 16,
     justifyContent: "space-between",
-    paddingVertical: 20,
+    paddingVertical: 10,
+    marginTop: 20
   },
   buttonWrapper: {
-    marginBottom: 10,
+    marginBottom: 0,
   },
+  title: {
+    fontSize: 18,
+    fontWeight: 600,
+    marginBottom: 6,
+  }
 });
 
 export default PhoneNumScreen;

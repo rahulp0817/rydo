@@ -9,15 +9,25 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "GOOGLE_MAP_API_KEY"
+        }
+      }
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "GOOGLE_MAP_API_KEY"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFD700"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.rydo"
+      "package": "com.rahul.rydo"
     },
     "web": {
       "bundler": "metro",
@@ -35,6 +45,10 @@
           "backgroundColor": "#FFD700"
         }
       ],
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+      },
       "expo-secure-store"
     ],
     "experiments": {
